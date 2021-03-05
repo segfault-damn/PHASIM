@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PHASIM:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PHASIM_jar</output-path>
+    <root id="archive" name="PHYSIM.jar">
+      <element id="module-output" name="PHASIM" />
+    </root>
+  </artifact>
+</component>
