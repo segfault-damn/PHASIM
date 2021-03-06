@@ -170,7 +170,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         resumeB.setBackground(new Color(171, 234, 253,30));
     }
 
-    //set Restartk
+    //set Restart
     public void setRestartButton() {
         restartB = new JButton(RestartIcon);
         restartB.addActionListener(this);
