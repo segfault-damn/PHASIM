@@ -445,6 +445,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         this.add(restartB);
     }
 
+    // pause setting
     public void pause() {
         this.remove(pauseB);
         repaint();
@@ -452,12 +453,14 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         this.add(resumeB);
     }
 
+    //resume setting
     public void resume() {
         this.remove(resumeB);
         timer.restart();
         this.add(pauseB);
     }
 
+    // restart setting
     public void restart() {
         remove(resumeB);
         remove(pauseB);
