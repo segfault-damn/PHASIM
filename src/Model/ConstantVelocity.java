@@ -253,16 +253,17 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         // draw the gravitational force
         g2d.setColor(new Color(161, 21, 222,220));
         int offset = (int) Math.round(mass * t + 80);
-        if (offset >= 150)
-            offset = 150;
+        if (offset >= 135)
+            offset = 135;
         g2d.drawLine(object_Px ,object_Py,object_Px ,object_Py + offset);
         g2d.drawLine(object_Px ,object_Py + offset, object_Px - 5 ,object_Py + offset - 20);
         g2d.drawLine(object_Px ,object_Py + offset, object_Px + 5 ,object_Py + offset - 20);
+        g2d.drawString("mg",object_Px ,object_Py + offset + 30);
 
         // draw the Normal force
         // check whether there is a normal force(it may fly)
         if (force/mass*Math.sin((double) forceDir/180*Math.PI) <= mass * 9.8) {
-            g2d.setColor(new Color(128, 245, 103, 220));
+            g2d.setColor(new Color(61, 203, 30, 220));
             double forceOffset = force * Math.sin((double) forceDir / 180 * Math.PI)/9.8;
 
             int Noffset = (int)Math.round(((mass-forceOffset)/mass)* offset);
@@ -271,6 +272,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
             g2d.drawLine(object_Px, object_Py, object_Px, object_Py - Noffset);
             g2d.drawLine(object_Px, object_Py - Noffset, object_Px - 5, object_Py - Noffset + 20);
             g2d.drawLine(object_Px, object_Py - Noffset, object_Px + 5, object_Py - Noffset + 20);
+            g2d.drawString("N",object_Px, object_Py - Noffset - 20);
         }
 
         // draw the applied force
@@ -279,7 +281,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
                 g2d.setColor(new Color(238, 15, 49, 220));
 
 
-                offset = (int)Math.round(force * t + 30);
+                offset = (int)Math.round(force * t + 50);
                 if (offset >= 120)
                     offset = 120;
                 int x_offset = (int) Math.round(offset * Math.cos((double) forceDir / 180 * Math.PI));
@@ -295,6 +297,12 @@ public class ConstantVelocity extends JPanel implements ActionListener {
 
                 g2d.drawLine(object_Px + x_offset, object_Py - y_offset, object_Px + x_offset - left_Arrow_x, object_Py - y_offset + left_Arrow_y);
                 g2d.drawLine(object_Px + x_offset, object_Py - y_offset, object_Px + x_offset - right_Arrow_x, object_Py - y_offset + right_Arrow_y);
+
+                int legendoffset = 20;
+                if(x_offset < 0) {
+                    legendoffset = -legendoffset;
+                }
+                g2d.drawString("F",object_Px + x_offset + legendoffset,object_Py - y_offset);
             }
         g2d.setStroke(new BasicStroke());
     }
