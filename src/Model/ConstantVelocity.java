@@ -12,7 +12,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     private double y_distance;
     private double mass = 1;
     private double force = 0;
-    private double mu = 1;
+    private double mu = 0;
     private int forceDir = 0;
 
     private int objectWidth = 48;
@@ -49,6 +49,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     JTextField velocityI;
     JTextField forceI;
     JTextField forceDirI;
+    JTextField muI;
 
     JLabel massLabel = new JLabel("Mass:");
     JLabel massUnit = new JLabel("kg");
@@ -58,6 +59,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     JLabel forceUnit = new JLabel("N");
     JLabel forceDirLabel = new JLabel("Force Dir:");
     JLabel forceDirUnit = new JLabel(String.valueOf('\u00B0'));
+    JLabel muLabel = new JLabel(String.valueOf('\u00B5') + ": ");
     JLabel errorM;
 
     JButton runB;
@@ -84,24 +86,28 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         velocityI = new JTextField("0",4);
         forceI = new JTextField("0",4);
         forceDirI = new JTextField("0",4);
+        muI = new JTextField("0",4);
 
         // add textfield
         this.add(massI);
         this.add(velocityI);
         this.add(forceI);
         this.add(forceDirI);
+        this.add(muI);
 
         // set Font
         massI.setFont(InputFont);
         velocityI.setFont(InputFont);
         forceI.setFont(InputFont);
         forceDirI.setFont(InputFont);
+        muI.setFont(InputFont);
 
         //set position
         massI.setBounds(180,50,100,50);
         velocityI.setBounds(180,150,100,50);
         forceI.setBounds(680,50,100,50);
         forceDirI.setBounds(680,150,100,50);
+        muI.setBounds(180,250,100,50);
     }
 
     public void setLabel() {
@@ -114,6 +120,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         forceUnit.setFont(labelFont);
         forceDirLabel.setFont(labelFont);
         forceDirUnit.setFont(labelFont);
+        muLabel.setFont(labelFont);
 
         massLabel.setBounds(30,50,300,50);
         massUnit.setBounds(300,50,100,50);
@@ -127,6 +134,8 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         forceDirLabel.setBounds(480,150,300,50);
         forceDirUnit.setBounds(800,150,300,50);
 
+        muLabel.setBounds(30,250,300,50);
+
         this.add(massLabel);
         this.add(massUnit);
         this.add(velocityLabel);
@@ -135,6 +144,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         this.add(forceUnit);
         this.add(forceDirLabel);
         this.add(forceDirUnit);
+        this.add(muLabel);
     }
 
     public void setBtn() {
@@ -248,6 +258,8 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         double t = 0.8;
         int object_Px = x + objectWidth/2;
         int object_Py = y + objectHeight/2;
+        int legendoffset = 20;
+
         g2d.setStroke(new BasicStroke(5));
 
 
@@ -259,7 +271,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         g2d.drawLine(object_Px ,object_Py,object_Px ,object_Py + offset);
         g2d.drawLine(object_Px ,object_Py + offset, object_Px - 5 ,object_Py + offset - 20);
         g2d.drawLine(object_Px ,object_Py + offset, object_Px + 5 ,object_Py + offset - 20);
-        g2d.drawString("mg",object_Px ,object_Py + offset + 30);
+        g2d.drawString("mg",object_Px ,object_Py + offset + legendoffset + 10);
 
         // draw the Normal force
         // check whether there is a normal force(it may fly)
@@ -270,14 +282,15 @@ public class ConstantVelocity extends JPanel implements ActionListener {
             int Noffset = (int)Math.round(((mass-forceOffset)/mass)* offset);
             if (Noffset < 40)
                 Noffset = 40;
+            if (Noffset > 200)
+                Noffset = 200;
             g2d.drawLine(object_Px, object_Py, object_Px, object_Py - Noffset);
             g2d.drawLine(object_Px, object_Py - Noffset, object_Px - 5, object_Py - Noffset + 20);
             g2d.drawLine(object_Px, object_Py - Noffset, object_Px + 5, object_Py - Noffset + 20);
-            g2d.drawString("N",object_Px, object_Py - Noffset - 20);
+            g2d.drawString("N",object_Px, object_Py - Noffset - legendoffset);
         }
 
         // draw the applied force
-        // check whether there is a normal force(it may fly)
             if(force > 0) {
                 g2d.setColor(new Color(238, 15, 49, 220));
 
@@ -299,12 +312,72 @@ public class ConstantVelocity extends JPanel implements ActionListener {
                 g2d.drawLine(object_Px + x_offset, object_Py - y_offset, object_Px + x_offset - left_Arrow_x, object_Py - y_offset + left_Arrow_y);
                 g2d.drawLine(object_Px + x_offset, object_Py - y_offset, object_Px + x_offset - right_Arrow_x, object_Py - y_offset + right_Arrow_y);
 
-                int legendoffset = 20;
+
                 if(x_offset < 0) {
                     legendoffset = -legendoffset;
                 }
                 g2d.drawString("F",object_Px + x_offset + legendoffset,object_Py - y_offset);
+
+                if(x_offset < 0) {
+                    legendoffset = -legendoffset;
+                }
             }
+
+        // draw the applied force
+        // check whether there is a normal force(it may fly)
+        if (force/mass*Math.sin((double) forceDir/180*Math.PI) <= mass * 9.8) {
+            g2d.setColor(new Color(93, 15, 238, 220));
+            double F_acceleration = force / mass;
+            double f_acceleration = (9.8 - F_acceleration * Math.sin((double) forceDir / 180 * Math.PI)) * mu;
+
+            int x_offset = (int) Math.round(f_acceleration*t + 50);
+            if (x_offset >= 200) {
+                x_offset = 200;
+            }
+
+            if (x_velocity > 0) {
+                if(forceDir <= 185 && forceDir >= 175) {
+                    object_Py = object_Py + 10;
+                    g2d.drawLine(object_Px, object_Py, object_Px - x_offset, object_Py);
+                    g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + 20, object_Py + 5);
+                    g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + 20, object_Py - 5);
+                    g2d.drawString("fc",object_Px - x_offset - legendoffset,object_Py);
+                    object_Py = object_Py - 10;
+                } else {
+                    g2d.drawLine(object_Px, object_Py, object_Px - x_offset, object_Py);
+                    g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + 20, object_Py + 5);
+                    g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + 20, object_Py - 5);
+                    g2d.drawString("fc",object_Px - x_offset - legendoffset,object_Py);
+                }
+            } else if (x_velocity == 0) {
+                if (f_acceleration * f_acceleration >= F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) * F_acceleration * Math.cos((double) forceDir / 180 * Math.PI)) {
+                    if(force > 0 && forceDir != 270 && forceDir != 90) {
+                        offset = (int) Math.round(force * t + 50);
+                        x_offset = (int) Math.round(offset * Math.cos((double) forceDir / 180 * Math.PI));
+                        int arrow = 20;
+                        if(x_offset < 0) {
+                            arrow = - arrow;
+                        }
+                        g2d.drawLine(object_Px, object_Py, object_Px - x_offset, object_Py);
+                        g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + arrow, object_Py + 5);
+                        g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + arrow, object_Py - 5);
+                        g2d.drawString("fc",object_Px - x_offset - legendoffset,object_Py);
+                    }
+                } else if (F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) > 0) {
+                    g2d.drawLine(object_Px, object_Py, object_Px - x_offset, object_Py);
+                    g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + 20, object_Py + 5);
+                    g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + 20, object_Py - 5);
+                    g2d.drawString("fc",object_Px - x_offset - legendoffset,object_Py);
+                }
+            } else {
+                g2d.drawLine(object_Px, object_Py, object_Px + x_offset, object_Py);
+                g2d.drawLine(object_Px + x_offset, object_Py, object_Px + x_offset - 20, object_Py + 5);
+                g2d.drawLine(object_Px + x_offset, object_Py, object_Px + x_offset - 20, object_Py - 5);
+                g2d.drawString("fc",object_Px + x_offset + legendoffset,object_Py);
+            }
+
+
+        }
         g2d.setStroke(new BasicStroke());
     }
 
@@ -352,21 +425,52 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         //Applied Force acceleration
         double F_acceleration = force / mass;
         //Frictional force acceleration
+        int x_choices;
         double f_acceleration = (9.8 - F_acceleration*Math.sin((double) forceDir/180*Math.PI))*mu;
-        int x_choices = (int) Math.round(x_velocity * 10);
-        System.out.println(x_choices);
-        if (x_choices > 0) {
+
+        //(alternative method) x_choices is a variable helping the decision of velocity more accurate by judging the object's acceleration
+
+//        if  (F_acceleration*Math.cos((double) forceDir/180*Math.PI) - f_acceleration <= -1000) {
+//            x_choices = (int) Math.round(x_velocity / 100);
+//        } else if  (F_acceleration*Math.cos((double) forceDir/180*Math.PI) - f_acceleration <= -100) {
+//            x_choices = (int) Math.round(x_velocity / 10);
+//        } else {
+//            x_choices = (int) Math.round(x_velocity);
+//        }
+        // (may have bug)
+
+        if (x_velocity > 0) {
             f_acceleration = -f_acceleration;
-        } else if (x_choices == 0) {
+            // case moving to the right
+            // update velocity with frictional force
+            x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
+
+        } else if (x_velocity == 0) {
             if (f_acceleration * f_acceleration >= F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) * F_acceleration * Math.cos((double) forceDir / 180 * Math.PI)) {
+                // case stationary and won't move
                 x_velocity = 0;
                 f_acceleration = -F_acceleration * Math.cos((double) forceDir / 180 * Math.PI);
+                System.out.println(f_acceleration);
+
             } else if(F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) > 0){
                 f_acceleration = -f_acceleration;
+                // case stationary and tend to move right
+                // update velocity with frictional force
+                x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
+            } else if(F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) < 0){
+                // case stationary and tend to move left
+                // update velocity with frictional force
+                x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
             }
+        } else {
+            // case moving to the left
+            x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
         }
-        // update velocity with frictional force
-        x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
+
+        // determine to not skip the stationary status
+        if (x_velocity>0 && x_velocity + k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + f_acceleration*k < 0){
+            x_velocity = 0;
+        }
 
 
         //------------update y_velocity-----------------------
@@ -400,7 +504,8 @@ public class ConstantVelocity extends JPanel implements ActionListener {
             mass = Double.parseDouble(massI.getText());
             force = Double.parseDouble(forceI.getText());
             forceDir = Integer.parseInt(forceDirI.getText());
-            if (mass <= 0||x_velocity < 0 || forceDir<0 || forceDir >=360) {
+            mu = Integer.parseInt(muI.getText());
+            if (mass <= 0||x_velocity < 0 || forceDir<0 || forceDir >=360 || mu<0 || mu > 1) {
                 throw new NumberFormatException();
             }
 
