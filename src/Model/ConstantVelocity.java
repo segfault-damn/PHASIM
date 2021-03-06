@@ -450,7 +450,6 @@ public class ConstantVelocity extends JPanel implements ActionListener {
                 // case stationary and won't move
                 x_velocity = 0;
                 f_acceleration = -F_acceleration * Math.cos((double) forceDir / 180 * Math.PI);
-                System.out.println(f_acceleration);
 
             } else if(F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) > 0){
                 f_acceleration = -f_acceleration;
@@ -566,6 +565,10 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         this.remove(forceDirI);
         this.remove(forceDirLabel);
         this.remove(forceDirUnit);
+
+        this.remove(muI);
+        this.remove(muLabel);
+
         this.remove(runB);
 
     }
