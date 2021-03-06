@@ -484,7 +484,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         this.add(runB);
     }
 
-    // load image
+    // load imagee
     private void load_image() {
         String sep = System.getProperty("file.separator");
         PauseIcon = new ImageIcon(System.getProperty("user.dir") + sep + "Image" + sep
