@@ -12,6 +12,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     private double y_distance;
     private double mass = 1;
     private double force = 0;
+    private double mu = 1;
     private int forceDir = 0;
 
     private int objectWidth = 48;
@@ -347,12 +348,29 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         double k = 0.01;
         t += k;
 
-        //update x_velocity;
-        double acceleration = force / mass;
-        x_velocity =  k*acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity;
+        //------------update x_velocity;--------------------
+        //Applied Force acceleration
+        double F_acceleration = force / mass;
+        //Frictional force acceleration
+        double f_acceleration = (9.8 - F_acceleration*Math.sin((double) forceDir/180*Math.PI))*mu;
+        int x_choices = (int) Math.round(x_velocity * 10);
+        System.out.println(x_choices);
+        if (x_choices > 0) {
+            f_acceleration = -f_acceleration;
+        } else if (x_choices == 0) {
+            if (f_acceleration * f_acceleration >= F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) * F_acceleration * Math.cos((double) forceDir / 180 * Math.PI)) {
+                x_velocity = 0;
+                f_acceleration = -F_acceleration * Math.cos((double) forceDir / 180 * Math.PI);
+            } else if(F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) > 0){
+                f_acceleration = -f_acceleration;
+            }
+        }
+        // update velocity with frictional force
+        x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
 
-        // update y_velocity
-        y_velocity = ((acceleration)*Math.sin((double) forceDir/180*Math.PI)-9.8)*k + y_velocity;
+
+        //------------update y_velocity-----------------------
+        y_velocity = (F_acceleration*Math.sin((double) forceDir/180*Math.PI)-9.8)*k + y_velocity;
         if(y_velocity < 0) {
             y_velocity = 0;
         }
