@@ -14,6 +14,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     private double force = 0;
     private double mu = 0;
     private int forceDir = 0;
+    private double firctionF = 0.0;
 
     private int objectWidth = 48;
     private int objectHeight = 50;
@@ -159,6 +160,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     // set Run
     public void setRunButton() {
         runB = new JButton(RunIcon);
+        runB.setUI(new BtnUI());
         runB.addActionListener(this);
         runB.setBounds(900,150,60,60);
         runB.setBackground(new Color(171, 234, 253,30));
@@ -167,6 +169,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     //set pause
     public void setPauseButton() {
         pauseB = new JButton(PauseIcon);
+        pauseB.setUI(new BtnUI());
         pauseB.addActionListener(this);
         pauseB.setBounds(900,150,60,60);
         pauseB.setBackground(new Color(171, 234, 253,30));
@@ -176,6 +179,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     //set Resume
     public void setResumeButton() {
         resumeB = new JButton(RunIcon);
+        resumeB.setUI(new BtnUI());
         resumeB.addActionListener(this);
         resumeB.setBounds(900,150,60,60);
         resumeB.setBackground(new Color(171, 234, 253,30));
@@ -184,6 +188,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     //set Restart
     public void setRestartButton() {
         restartB = new JButton(RestartIcon);
+        restartB.setUI(new BtnUI());
         restartB.addActionListener(this);
         restartB.setBounds(900,250,60,60);
         restartB.setBackground(new Color(171, 234, 253,30));
@@ -237,6 +242,9 @@ public class ConstantVelocity extends JPanel implements ActionListener {
 
             double d = (double) Math.round(x_distance*100)/100;
             g2d.drawString("Dx = " + d + " m",50,190);
+
+            firctionF = (double) Math.round(firctionF*100)/100;
+            g2d.drawString("fc = " + firctionF + " N",50,260);
 
             drawForces(g2d);
 
@@ -325,7 +333,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
 
         // draw the applied force
         // check whether there is a normal force(it may fly)
-        if (force/mass*Math.sin((double) forceDir/180*Math.PI) <= mass * 9.8) {
+        if (force/mass*Math.sin((double) forceDir/180*Math.PI) <= mass * 9.8 && mu != 0) {
             g2d.setColor(new Color(93, 15, 238, 220));
             double F_acceleration = force / mass;
             double f_acceleration = (9.8 - F_acceleration * Math.sin((double) forceDir / 180 * Math.PI)) * mu;
@@ -337,6 +345,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
 
             if (x_velocity > 0) {
                 if(forceDir <= 185 && forceDir >= 175) {
+                    // move down a little bit
                     object_Py = object_Py + 10;
                     g2d.drawLine(object_Px, object_Py, object_Px - x_offset, object_Py);
                     g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + 20, object_Py + 5);
@@ -369,11 +378,12 @@ public class ConstantVelocity extends JPanel implements ActionListener {
                     g2d.drawLine(object_Px - x_offset, object_Py, object_Px - x_offset + 20, object_Py - 5);
                     g2d.drawString("fc",object_Px - x_offset - legendoffset,object_Py);
                 }
-            } else {
+            } else if (x_velocity < 0) {
                 g2d.drawLine(object_Px, object_Py, object_Px + x_offset, object_Py);
                 g2d.drawLine(object_Px + x_offset, object_Py, object_Px + x_offset - 20, object_Py + 5);
                 g2d.drawLine(object_Px + x_offset, object_Py, object_Px + x_offset - 20, object_Py - 5);
                 g2d.drawString("fc",object_Px + x_offset + legendoffset,object_Py);
+
             }
 
 
@@ -439,37 +449,47 @@ public class ConstantVelocity extends JPanel implements ActionListener {
 //        }
         // (may have bug)
 
+        double x_appliedforceAcceleration;
+        if (forceDir == 90 || forceDir == 270) {
+            x_appliedforceAcceleration = 0;
+        } else {
+            x_appliedforceAcceleration = F_acceleration*Math.cos((double) forceDir/180*Math.PI);
+        }
+
+
+
         if (x_velocity > 0) {
             f_acceleration = -f_acceleration;
             // case moving to the right
             // update velocity with frictional force
-            x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
+            x_velocity =  (x_appliedforceAcceleration + f_acceleration)*k + x_velocity ;
 
         } else if (x_velocity == 0) {
-            if (f_acceleration * f_acceleration >= F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) * F_acceleration * Math.cos((double) forceDir / 180 * Math.PI)) {
-                // case stationary and won't move
+            if (f_acceleration * f_acceleration >= x_appliedforceAcceleration * x_appliedforceAcceleration){
+            // case stationary and won't move
                 x_velocity = 0;
-                f_acceleration = -F_acceleration * Math.cos((double) forceDir / 180 * Math.PI);
-
-            } else if(F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) > 0){
+                f_acceleration = -x_appliedforceAcceleration;
+            } else if(x_appliedforceAcceleration > 0){
                 f_acceleration = -f_acceleration;
                 // case stationary and tend to move right
                 // update velocity with frictional force
-                x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
-            } else if(F_acceleration * Math.cos((double) forceDir / 180 * Math.PI) < 0){
+                x_velocity =  k* (x_appliedforceAcceleration+ f_acceleration) + x_velocity;
+            } else if(x_appliedforceAcceleration < 0){
                 // case stationary and tend to move left
                 // update velocity with frictional force
-                x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
+                x_velocity =  k*(x_appliedforceAcceleration + f_acceleration) + x_velocity;
             }
         } else {
             // case moving to the left
-            x_velocity =  k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + x_velocity + f_acceleration*k;
+            x_velocity =  k*(x_appliedforceAcceleration + f_acceleration) + x_velocity;
         }
-
+        firctionF = f_acceleration;
         // determine to not skip the stationary status
-        if (x_velocity>0 && x_velocity + k*F_acceleration*Math.cos((double) forceDir/180*Math.PI) + f_acceleration*k < 0){
+        if (x_velocity>0 && x_velocity +  k*(x_appliedforceAcceleration + f_acceleration) < 0){
             x_velocity = 0;
         }
+
+
 
 
         //------------update y_velocity-----------------------
@@ -503,7 +523,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
             mass = Double.parseDouble(massI.getText());
             force = Double.parseDouble(forceI.getText());
             forceDir = Integer.parseInt(forceDirI.getText());
-            mu = Integer.parseInt(muI.getText());
+            mu = Double.parseDouble(muI.getText());
             if (mass <= 0||x_velocity < 0 || forceDir<0 || forceDir >=360 || mu<0 || mu > 1) {
                 throw new NumberFormatException();
             }
