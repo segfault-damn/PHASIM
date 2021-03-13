@@ -44,7 +44,7 @@ public class MenuComboBoxUI extends BasicComboBoxUI {
         if(comboBox.hasFocus()) {
             g2d.setColor(new Color(181, 235, 253));
         } else {
-            g2d.setColor(Color.PINK);
+            g2d.setColor(Color.GREEN);
         }
 
         g2d.drawRoundRect(0,0,comboBox.getWidth() - 2,comboBox.getHeight() -2, 2,2);

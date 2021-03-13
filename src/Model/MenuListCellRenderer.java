@@ -36,7 +36,7 @@ public class MenuListCellRenderer implements ListCellRenderer {
         }
 
         renderer.setHorizontalAlignment(JLabel.CENTER);
-        renderer.setBounds(MenuFrame.WIDTH/2-200,400 + 50,400,50);
+        renderer.setBounds(MainFrame.WIDTH/2-200,400 + 50,400,50);
         list.setSelectionBackground(new Color(223, 243, 248));
         list.setSelectionForeground(new Color(17, 4, 121));
         list.setBorder(null);

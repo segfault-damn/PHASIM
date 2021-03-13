@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class MenuFrame extends JFrame implements ActionListener {
+public class MainFrame extends JFrame implements ActionListener {
 
     public static int HEIGHT = 750;
     public static int WIDTH = 1000;
@@ -17,12 +17,13 @@ public class MenuFrame extends JFrame implements ActionListener {
     public JButton back = new JButton();
 
     MenuPanel mp = new MenuPanel(this,Start);
-    ConstantVelocity CVP = new ConstantVelocity();
+    PlanePanel PlaneP = new PlanePanel();
+    PendulumPanel PendulumP = new PendulumPanel();
 
 
 
 
-    public MenuFrame() {
+    public MainFrame() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(null);
         this.setBounds(0,0,WIDTH,HEIGHT);
@@ -36,12 +37,12 @@ public class MenuFrame extends JFrame implements ActionListener {
         back.setBackground(new Color(1, 6, 16,250));
 
         //add back
-        CVP.add(back);
+        PlaneP.add(back);
+        PendulumP.add(back);
 
         //----------------------------------------
 
-        this.setContentPane(mp);
-
+        this.setContentPane(PendulumP);
 
         // --------------------------------------
         this.setResizable(false);
@@ -75,13 +76,12 @@ public class MenuFrame extends JFrame implements ActionListener {
         // control Content Panel
         if (source == Start) {
             String s = mp.getSelection();
-            System.out.println(s);
             switch (s) {
                 case "Plane" :
-                    this.setContentPane(CVP);
+                    this.setContentPane(PlaneP);
                     break;
                 case "Pendulum" :
-
+                    this.setContentPane(PendulumP);
                     break;
             }
         } else if (source == back) {

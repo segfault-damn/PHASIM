@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ConstantVelocity extends JPanel implements ActionListener {
+public class PlanePanel extends JPanel implements ActionListener {
     private double x_velocity = 0;
     private double y_velocity = 0;
     private double x_distance = 0;
@@ -20,8 +20,8 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     private int objectHeight = 50;
     private int MAXSCALE = 50; // increase when the block reach the right
 
-    private static final int WIDTH = MenuFrame.WIDTH; //1000
-    private static final int HEIGHT = MenuFrame.HEIGHT;
+    private static final int WIDTH = MainFrame.WIDTH; //1000
+    private static final int HEIGHT = MainFrame.HEIGHT;
     private static final int TABLE_HEIGHT = 550;
     private static final int SCALE_HEIGHT = 30;
 
@@ -68,7 +68,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
     JButton resumeB;
     JButton restartB;
 
-    public ConstantVelocity() {
+    public PlanePanel() {
         this.setBounds(0,0,WIDTH,HEIGHT);
         this.setLayout(null);
         load_image();
@@ -638,7 +638,7 @@ public class ConstantVelocity extends JPanel implements ActionListener {
         this.add(runB);
     }
 
-    // load imagee
+    // load image
     private void load_image() {
         String sep = System.getProperty("file.separator");
         PauseIcon = new ImageIcon(System.getProperty("user.dir") + sep + "Image" + sep
