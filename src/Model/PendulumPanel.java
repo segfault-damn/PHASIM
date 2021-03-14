@@ -289,6 +289,32 @@ public class PendulumPanel  extends JPanel implements ActionListener {
         g2d.drawLine(x ,y + offset, x + 5 ,y + offset - 20);
         g2d.drawString("mg",x + legendoffset ,y + offset - legendoffset);
 
+        // draw the tension force
+        g2d.setColor(new Color(5, 151, 52));
+        double Toffset = offset/m/g*(m* v * v /l + m*g*Math.cos(theta));
+        int ToffsetX = - (int) Math.round(Toffset * Math.sin(theta));
+        int ToffsetY = (int) Math.round(Toffset * Math.cos(theta));
+        g2d.drawLine(x,y,x + ToffsetX,y - ToffsetY);
+        int arrow_length = 15;
+        // the offset of arrow's degree
+        double xoffset = 0.3;
+        int left_Arrow_x;
+        int left_Arrow_y;
+        int right_Arrow_x;
+        int right_Arrow_y;
+
+        left_Arrow_x = (int) Math.round(arrow_length * Math.sin(-xoffset + theta));
+        left_Arrow_y = (int) Math.round(arrow_length * Math.cos(xoffset - theta));
+        right_Arrow_x = (int) Math.round(arrow_length * Math.sin(xoffset + theta));
+        right_Arrow_y = (int) Math.round(arrow_length * Math.cos(- xoffset - theta));
+
+
+
+        g2d.drawLine(x + ToffsetX,y - ToffsetY,x + ToffsetX + left_Arrow_x,y - ToffsetY+ left_Arrow_y);
+        g2d.drawLine(x + ToffsetX,y - ToffsetY,x + ToffsetX + right_Arrow_x,y - ToffsetY + right_Arrow_y);
+        g2d.drawString("T",x + ToffsetX  - 20 - legendoffset ,y - ToffsetY + legendoffset);
+
+
 
     }
 
@@ -306,33 +332,53 @@ public class PendulumPanel  extends JPanel implements ActionListener {
         double EpM = EkM;
         double EpL = MaxBarL/EpM*Ep; // bar length
 
-        g2d.setStroke(new BasicStroke(20));
+
         // draw bars
         int left = 150;
         g2d.setFont(new Font(Font.SERIF,Font.BOLD,30));
 
         // kinetic
         Ek = (double) Math.round(Ek*100)/100;
+
+        g2d.setStroke(new BasicStroke(20));
+        g2d.setColor(new Color(92, 25, 199,200));
+        if ((int) Math.round(EkL) != 0)
+            g2d.drawLine(left,HEIGHT - 150,left + (int) Math.round(EkL),HEIGHT - 150);
+
         g2d.setColor(new Color(92, 25, 199));
-        g2d.drawLine(left,HEIGHT - 150,left + (int) Math.round(EkL),HEIGHT - 150);
+        g2d.setStroke(new BasicStroke(5));
+        g2d.drawLine(left-10,HEIGHT - 140,left-10,HEIGHT - 160);
+
         g2d.drawString("KE",left - 70,HEIGHT - 150 + 10);
         g2d.drawString(Ek + "J",left + MaxBarL + 40,HEIGHT - 150 + 10);
 
         //potential
         Ep = (double) Math.round(Ep*100)/100;
+
+        g2d.setStroke(new BasicStroke(20));
+        g2d.setColor(new Color(232, 127, 36,200));
+        if ((int) Math.round(EpL) != 0)
+            g2d.drawLine(left,HEIGHT - 120,left + (int) Math.round(EpL),HEIGHT - 120);
+
         g2d.setColor(new Color(232, 127, 36));
-        g2d.drawLine(left,HEIGHT - 120,left + (int) Math.round(EpL),HEIGHT - 120);
+        g2d.setStroke(new BasicStroke(5));
+        g2d.drawLine(left-10,HEIGHT - 130,left-10,HEIGHT - 110);
         g2d.drawString("PE",left - 67,HEIGHT - 120 + 10);
         g2d.drawString(Ep + "J",left + MaxBarL + 40,HEIGHT - 120 + 10);
 
         //total
         double ME = (double) Math.round(EkM*100)/100;
-        g2d.setColor(new Color(226, 15, 89));
+        g2d.setStroke(new BasicStroke(20));
+        g2d.setColor(new Color(226, 15, 89,200));
         if (EkM != 0) {
             g2d.drawLine(left, HEIGHT - 90, left + MaxBarL, HEIGHT - 90);
         } else { // g=0;
             g2d.drawLine(left, HEIGHT - 90, left + (int) Math.round(EkL), HEIGHT - 90);
         }
+
+        g2d.setStroke(new BasicStroke(5));
+        g2d.drawLine(left-10,HEIGHT - 100,left-10,HEIGHT -80);
+        g2d.setColor(new Color(226, 15, 89));
         g2d.drawString("ME",left - 70,HEIGHT - 90 + 10);
 
         g2d.drawString(ME + "J",left + MaxBarL + 40,HEIGHT - 90 + 10);
@@ -593,6 +639,11 @@ public class PendulumPanel  extends JPanel implements ActionListener {
         setLabel();
         this.add(runB);
     }
+
+    public boolean isRun() {
+        return timer.isRunning();
+    }
+
 
 
     // load image

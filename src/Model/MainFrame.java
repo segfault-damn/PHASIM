@@ -36,13 +36,11 @@ public class MainFrame extends JFrame implements ActionListener {
         back.setBounds(900,50,60,60);
         back.setBackground(new Color(1, 6, 16,250));
 
-        //add back
-        PlaneP.add(back);
-        PendulumP.add(back);
+
 
         //----------------------------------------
 
-        this.setContentPane(PendulumP);
+        this.setContentPane(mp);
 
         // --------------------------------------
         this.setResizable(false);
@@ -79,13 +77,24 @@ public class MainFrame extends JFrame implements ActionListener {
             switch (s) {
                 case "Plane" :
                     this.setContentPane(PlaneP);
+                    //add back
+                    PlaneP.add(back);
                     break;
                 case "Pendulum" :
                     this.setContentPane(PendulumP);
+                    //add back
+                    PendulumP.add(back);
                     break;
             }
         } else if (source == back) {
             this.setContentPane(mp);
+
+            // shut down running panel
+            if (PlaneP.isRun()) {
+                PlaneP.pause();
+            } else if (PendulumP.isRun()) {
+                PendulumP.pause();
+            }
         }
     }
 

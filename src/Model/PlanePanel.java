@@ -638,6 +638,10 @@ public class PlanePanel extends JPanel implements ActionListener {
         this.add(runB);
     }
 
+    public boolean isRun() {
+        return timer.isRunning();
+    }
+
     // load image
     private void load_image() {
         String sep = System.getProperty("file.separator");
