@@ -245,11 +245,11 @@ public class PendulumPanel  extends JPanel implements ActionListener {
         g2d.fillRoundRect(x - objectWidth/2,y - objectHeight/2,objectWidth,objectHeight,50,50);
 
         // show the running data
-        g2d.setColor(new Color(24, 9, 2));
+        g2d.setColor(new Color(12, 3, 59));
         if(timer.isRunning() || t > 0) {
 
             // draw outputs
-            Font outputFont = new Font(Font.SERIF,Font.ROMAN_BASELINE,40);
+            Font outputFont = new Font("Cambria",Font.ROMAN_BASELINE,40);
             g2d.setFont(outputFont);
             // round the number to 2-decimal
             g2d.drawString("Time: " + (double) Math.round(t*100) / 100 + " s",50,50);
@@ -260,6 +260,9 @@ public class PendulumPanel  extends JPanel implements ActionListener {
             double Tension = (g*Math.cos(theta) + ar)*m;
             double T = (double) Math.round(Tension*100)/100;
             g2d.drawString("T = " + T + " N",50,190);
+
+            double thetaO = (double) Math.round(theta*100/Math.PI * 180)/100;
+            g2d.drawString("\u03B8 = " + thetaO + "\u00B0",50,260);
 
             // draw string length in the middle
             g2d.setColor(new Color(224, 122, 76,100));
@@ -279,6 +282,10 @@ public class PendulumPanel  extends JPanel implements ActionListener {
     private void drawForces(Graphics2D g2d) {
         double t = 0.8;
         int legendoffset = 30;
+
+        Font forceFont = new Font("Comic Sans MS",Font.ROMAN_BASELINE,40);
+        g2d.setFont(forceFont);
+
         // draw the gravitational force
         g2d.setColor(new Color(161, 21, 222,220));
         int offset = (int) Math.round(m * t + 80);

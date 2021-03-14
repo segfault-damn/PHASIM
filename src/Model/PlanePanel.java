@@ -232,7 +232,7 @@ public class PlanePanel extends JPanel implements ActionListener {
 
         // show the running data
         if(timer.isRunning() || t > 0) {
-            Font outputFont = new Font(Font.SERIF,Font.ROMAN_BASELINE,40);
+            Font outputFont = new Font("Cambria",Font.ROMAN_BASELINE,40);
             g2d.setFont(outputFont);
             // round the number to 2-decimal
             g2d.drawString("Time: " + (double) Math.round(t*100) / 100 + " s",50,50);
@@ -267,6 +267,9 @@ public class PlanePanel extends JPanel implements ActionListener {
         int object_Px = x + objectWidth/2;
         int object_Py = y + objectHeight/2;
         int legendoffset = 20;
+
+        Font forceFont = new Font("Comic Sans MS",Font.ROMAN_BASELINE,40);
+        g2d.setFont(forceFont);
 
         g2d.setStroke(new BasicStroke(5));
 
@@ -524,7 +527,7 @@ public class PlanePanel extends JPanel implements ActionListener {
             force = Double.parseDouble(forceI.getText());
             forceDir = Integer.parseInt(forceDirI.getText());
             mu = Double.parseDouble(muI.getText());
-            if (mass <= 0||x_velocity < 0 || forceDir<0 || forceDir >=360 || mu<0 || mu > 1) {
+            if (mass <= 0||x_velocity < 0 || forceDir<0 || forceDir >=360 || mu<0 || mu > 1 || force < 0) {
                 throw new NumberFormatException();
             }
 
