@@ -17,16 +17,16 @@ public class MainFrame extends JFrame implements ActionListener {
     public JButton back = new JButton();
 
     MenuPanel mp = new MenuPanel(this,Start);
-    PlanePanel PlaneP = new PlanePanel();
-    PendulumPanel PendulumP = new PendulumPanel();
-
+    PanelAbstract PlaneP = new PlanePanel();
+    PanelAbstract PendulumP = new PendulumPanel();
+    PanelAbstract ProjectileP = new Projectile();
 
 
 
     public MainFrame() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(null);
-        this.setBounds(0,0,WIDTH,HEIGHT);
+        this.setBounds(250,250,WIDTH,HEIGHT);
 
         //set back Button
         load_image();
@@ -40,7 +40,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
         //----------------------------------------
 
-        this.setContentPane(mp);
+        this.setContentPane(ProjectileP);
 
         // --------------------------------------
         this.setResizable(false);
@@ -85,6 +85,11 @@ public class MainFrame extends JFrame implements ActionListener {
                     //add back
                     PendulumP.add(back);
                     break;
+                case "Projectile":
+                    this.setContentPane(ProjectileP);
+                    //add back
+                    ProjectileP.add(back);
+                    break;
             }
         } else if (source == back) {
             this.setContentPane(mp);
@@ -94,6 +99,8 @@ public class MainFrame extends JFrame implements ActionListener {
                 PlaneP.pause();
             } else if (PendulumP.isRun()) {
                 PendulumP.pause();
+            } else if (ProjectileP.isRun()) {
+              //  ProjectileP.pause();
             }
         }
     }

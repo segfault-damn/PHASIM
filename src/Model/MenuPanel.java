@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 public class MenuPanel extends JPanel{
     private static final int WIDTH = MainFrame.WIDTH; //1000
     private static final int HEIGHT = MainFrame.HEIGHT;
-    String[] Menu = { "Plane", "Pendulum"};
+    String[] Menu = { "Plane", "Pendulum","Projectile"};
     private JComboBox menuList;
 
     ImageIcon Logo;
