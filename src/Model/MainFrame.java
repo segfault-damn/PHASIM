@@ -40,7 +40,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
         //----------------------------------------
 
-        this.setContentPane(ProjectileP);
+        this.setContentPane(mp);
 
         // --------------------------------------
         this.setResizable(false);

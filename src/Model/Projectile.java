@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import static sun.swing.MenuItemLayoutHelper.max;
+
 
 public class Projectile extends PanelAbstract implements ActionListener {
     private static final int WIDTH = MainFrame.WIDTH; //1000
@@ -38,6 +40,9 @@ public class Projectile extends PanelAbstract implements ActionListener {
     JTextField gravityI;
     JTextField bI;
 
+    JButton detailBtn;
+    private int detailSwitch = 1; // detail btn flag-- 1: on; 2:off;
+
 
     // variables
     private double t = 0.0;//time
@@ -69,10 +74,14 @@ public class Projectile extends PanelAbstract implements ActionListener {
     private int x = LEFT ;
     private int y = HEIGHT - tableHeight - objectHeight/2;
 
+    private double terminalV = -1; // terminal velocity is -1 if b = 0;
+
+
+
     public Projectile() {
         super();
         setInput();
-
+        setDetailBtn();
     }
 
     public void setInput() {
@@ -154,6 +163,18 @@ public class Projectile extends PanelAbstract implements ActionListener {
 
     }
 
+    private void setDetailBtn() {
+        detailBtn = new JButton(); // initialing with detail on
+        detailBtn.setUI(new BtnUI());
+        detailBtn.addActionListener(this);
+        detailBtn.setFont(new Font("Cambria",Font.PLAIN,25));
+        detailBtn.setBounds(750,10,300,30);
+        detailBtn.setForeground(new Color(79, 113, 236,200));
+        detailBtn.setBackground(new Color(186, 185, 184,100));
+        detailBtn.setLabel("Hide Details");
+        this.add(detailBtn);
+    }
+
     // paint animation
     public void paintComponent(Graphics gr) {
         super.paintComponent(gr);
@@ -173,22 +194,117 @@ public class Projectile extends PanelAbstract implements ActionListener {
         g2d.drawLine(LEFT - objectWidth/2,(int) Math.round(HEIGHT - h -tableHeight), LEFT + objectWidth/2, (int) Math.round(HEIGHT - h -tableHeight));
         g2d.setStroke(new BasicStroke(0));
 
-        g2d.setColor(new Color(14, 10, 10,150));
+
 
         if(timer.isRunning() || t > 0) {
+            drawForces(g2d);
+
             drawScaleX(g2d, MAX_X);
             drawScaleY(g2d, MAX_Y);
+            if (detailSwitch == 1) {
+                drawOutput(g2d);
+                drawEnergy(g2d);
+            }
+        }
 
-            drawForces(g2d);
+
+    }
+
+    public void drawOutput(Graphics2D g2d) {
+        g2d.setColor(new Color(14, 10, 10,200));
+        // draw outputs
+        Font outputFont = new Font("Cambria",Font.ROMAN_BASELINE,40);
+        g2d.setFont(outputFont);
+        // round the number to 2-decimal
+        g2d.drawString("Time: " + (double) Math.round(t*100) / 100 + " s",90,80);
+
+        double velocity = (double) Math.round(v *100)/100;
+        g2d.drawString("v = " + velocity + " m/s",90,150);
+
+        double x_pos = (double) Math.round(x_r*100)/100;
+        g2d.drawString("x = " + x_pos + " m",90,220);
+
+        double y_pos = (double) Math.round(y_r*100)/100;
+
+        g2d.drawString("y = " + y_pos + " m",90,290);
+
+        if (b != 0) {
+            double f = (double) Math.round(b * v * 100) / 100;
+            g2d.drawString("Air Drag Force = " + f + " N", 90, 360);
         }
     }
 
     @Override
     public void drawForces(Graphics2D g2d) {
+        double t = 0.8;
+        int legendoffset = 15;
 
+        Font forceFont = new Font("Comic Sans MS",Font.ROMAN_BASELINE,40);
+        g2d.setFont(forceFont);
+        g2d.setStroke(new BasicStroke(3));
+        // draw the gravitational force
+        g2d.setColor(new Color(5, 169, 35,220));
+        int offset = (int) Math.round(m * t + 80);
+        if (offset >= 135)
+            offset = 135;
+        g2d.drawLine(x,y,x,y + offset);
+        g2d.drawLine(x ,y + offset, x - 5 ,y + offset - 20);
+        g2d.drawLine(x ,y + offset, x + 5 ,y + offset - 20);
+        g2d.drawString("mg",x + legendoffset ,y + offset);
+
+        // draw the Air drag force (if b !=0)
+        if (b != 0 && v!= 0) {
+
+            int alphaF;
+            int lengthF;
+
+            double maxV = v0;
+            if (terminalV > v0) {
+                maxV = terminalV;
+            }
+
+            if (v > maxV) { // guard
+                alphaF = 255;
+                lengthF = 135;
+            } else {
+                alphaF = (int) Math.round(225/maxV * v + 30);
+                lengthF = (int) Math.round((offset - 40)/terminalV * v + 40);
+            }
+
+            g2d.setColor(new Color(109, 4, 218,alphaF));
+
+
+            int foffsetX = -(int) Math.round(lengthF * Math.cos(theta));
+            int foffsetY = -(int) Math.round(lengthF * Math.sin(theta));
+            g2d.drawLine(x, y, x + foffsetX, y - foffsetY);
+            int arrow_length = 15;
+            // the offset of arrow's degree
+            double xoffset = 0.3;
+            int left_Arrow_x;
+            int left_Arrow_y;
+            int right_Arrow_x;
+            int right_Arrow_y;
+
+            left_Arrow_x = (int) Math.round(arrow_length * Math.cos(-xoffset + theta));
+            left_Arrow_y = (int) Math.round(arrow_length * Math.sin(xoffset - theta));
+            right_Arrow_x = (int) Math.round(arrow_length * Math.cos(xoffset + theta));
+            right_Arrow_y = (int) Math.round(arrow_length * Math.sin(-xoffset - theta));
+
+
+            g2d.drawLine(x + foffsetX, y - foffsetY, x + foffsetX + left_Arrow_x, y - foffsetY + left_Arrow_y);
+            g2d.drawLine(x + foffsetX, y - foffsetY, x + foffsetX + right_Arrow_x, y - foffsetY + right_Arrow_y);
+
+            if (alphaF < 50) {
+                g2d.setColor(new Color(109, 4, 218,40));
+            } else {
+                g2d.setColor(new Color(109, 4, 218));
+            }
+            g2d.drawString("f", x + foffsetX - 20 - legendoffset, y - foffsetY + legendoffset);
+        }
     }
 
     public void drawScaleX(Graphics2D g2d,int X_scale) {
+        g2d.setColor(new Color(14, 10, 10,150));
         g2d.setStroke(new BasicStroke(3));
         drawlineS_X(g2d,0,X_scale);
         drawlineS_X(g2d,1,X_scale);
@@ -202,6 +318,7 @@ public class Projectile extends PanelAbstract implements ActionListener {
     }
 
     public void drawScaleY(Graphics2D g2d,int Y_scale) {
+        g2d.setColor(new Color(14, 10, 10,150));
         g2d.setStroke(new BasicStroke(3));
         drawlineS_Y(g2d,0,Y_scale);
         drawlineS_Y(g2d,1,Y_scale);
@@ -240,7 +357,120 @@ public class Projectile extends PanelAbstract implements ActionListener {
         }
     }
 
+    public void drawEnergy(Graphics2D g2d) {
+        int MaxBarL = 160;
 
+        // calculate kinetic energy
+
+        double Ek = 0.5 * m * v * v;
+        double maxV = v0;
+        if (terminalV > v0) {
+            maxV = terminalV;
+        }
+        double EkM;
+        if (b <= 1) { // if b<1 maxV is inaccurate since it takes too long to get terminal velocity
+            EkM = 0.5 * m * v0 * v0 + m * g * h;
+        } else {
+            EkM = 0.5 * m * maxV * maxV; // Max Kinetic Energy;
+        }
+        double EkL= MaxBarL/EkM*Ek; // bar length
+
+
+        // calculate potential energy
+        double Ep =  m * g * y_r;
+        double EpM = calMaxH() * m * g;
+        double EpL = MaxBarL/EpM*Ep; // bar length
+
+        // calculate total energy
+        double TotE;
+        double TotalL;
+        if(b != 0) {
+            TotE =  Ek + Ep;
+            double TotEM = 0.5 * m * v0 * v0 + m * g* h;
+            TotalL = MaxBarL/TotEM*TotE;
+        } else {
+            TotE = 0.5 * m * v0 * v0 + m * g* h;
+            TotalL = MaxBarL;
+        }
+
+        // Case touches ground
+        if (y_r ==0 && vy <0){
+            Ek = TotE;
+            EkL= MaxBarL/EkM*Ek;
+        }
+
+
+
+        // draw bars
+        int left = 550;
+        g2d.setFont(new Font(Font.SERIF,Font.BOLD,30));
+
+        // kinetic
+        g2d.setColor(new Color(92, 25, 199));
+        if (Ek <= 100000) {
+            Ek = (double) Math.round(Ek*100)/100;
+            g2d.drawString(Ek + "J",left + MaxBarL + 40,80);
+        } else {
+            Ek = (double) Math.round(Ek/10000)/10;
+            g2d.drawString(Ek + "MJ",left + MaxBarL + 40,80);
+        }
+
+
+        g2d.setStroke(new BasicStroke(20));
+        g2d.setColor(new Color(92, 25, 199,150));
+        if ((int) Math.round(EkL) != 0)
+            g2d.drawLine(left,80,left + (int) Math.round(EkL),80);
+
+        g2d.setColor(new Color(92, 25, 199));
+        g2d.setStroke(new BasicStroke(5));
+        g2d.drawLine(left-10,80+10,left-10,80 - 10);
+
+        g2d.drawString("KE",left - 70,80);
+
+        //potential
+        g2d.setColor(new Color(232, 127, 36));
+        if (Ep <= 100000) {
+            Ep = (double) Math.round(Ep*100)/100;
+            g2d.drawString(Ep + "J",left + MaxBarL + 40,110);
+        } else {
+            Ep = (double) Math.round(Ep/10000)/10;
+            g2d.drawString(Ep + "MJ",left + MaxBarL + 40,110);
+        }
+
+        g2d.setStroke(new BasicStroke(20));
+        g2d.setColor(new Color(232, 127, 36,150));
+        if ((int) Math.round(EpL) != 0)
+            g2d.drawLine(left,110,left + (int) Math.round(EpL),110);
+
+        g2d.setColor(new Color(232, 127, 36));
+        g2d.setStroke(new BasicStroke(5));
+        g2d.drawLine(left-10,110 - 10,left-10,110 +10);
+        g2d.drawString("PE",left - 67,110);
+
+    // total
+
+        double ME;
+        g2d.setColor(new Color(226, 15, 89));
+        if (TotE <= 100000) {
+            ME = (double) Math.round(TotE * 100) / 100;
+            g2d.drawString(ME + "J",left + MaxBarL + 40,140);
+        } else {
+            ME = (double) Math.round(TotE/10000) / 10;
+            g2d.drawString(ME + "MJ",left + MaxBarL + 40,140);
+        }
+        g2d.setStroke(new BasicStroke(20));
+        g2d.setColor(new Color(226, 15, 89,150));
+        if (EkM != 0) {
+            g2d.drawLine(left, 140, left + (int) Math.round(TotalL), 140);
+        } else { // g=0;
+            g2d.drawLine(left, 140, left + (int) Math.round(TotalL), 140);
+        }
+
+        g2d.setStroke(new BasicStroke(5));
+        g2d.drawLine(left-10,140 -10,left-10,140 + 10);
+        g2d.setColor(new Color(226, 15, 89));
+        g2d.drawString("ME",left - 70,140);
+    }
 
     // return max optimized scale of the input scale
     private int scaleSet (double scaleN){
@@ -255,7 +485,7 @@ public class Projectile extends PanelAbstract implements ActionListener {
         return (int) Math.round(n);
     }
 
-    //TODO
+
     // cal the max distance from left
     // x = -m/bC(e^(-bt/m)-1)
     // C = v0 cos theta
@@ -265,7 +495,7 @@ public class Projectile extends PanelAbstract implements ActionListener {
     private double calMaxX() {
        // -h  = - 0.5 * g * t ^2 + v*Math.sin(theta)*t;
         double MaxX;
-        if (b!= 0) {
+        if (b >= 1) {
             MaxX = m / b * v0 * Math.cos(theta);
         } else {
            // -h = - 0.5 * g * t* t + v0 * sin(theta) * t;
@@ -275,7 +505,7 @@ public class Projectile extends PanelAbstract implements ActionListener {
         return MaxX;
     }
 
-    //TODO
+
     // cal the max height it can reach
     private double calMaxH() {
         double MaxH;
@@ -283,8 +513,8 @@ public class Projectile extends PanelAbstract implements ActionListener {
             double C = v0* Math.sin(thetaSet) + m* g/b;
             MaxH = -m /b * C * (m*g/b/C - 1) + m*m*g/b/b * Math.log(m*g/b/C) + h;
         } else {
-          double tApproximate = v*Math.sin(thetaSet)/g;
-          MaxH = - 0.5 * g * tApproximate * tApproximate + v*Math.sin(theta)*tApproximate;
+          double tApproximate = v0*Math.sin(thetaSet)/g;
+          MaxH = - 0.5 * g * tApproximate * tApproximate + v0*Math.sin(thetaSet)*tApproximate;
         }
         return MaxH;
     }
@@ -300,6 +530,15 @@ public class Projectile extends PanelAbstract implements ActionListener {
         Object source = e.getSource();
         if (source == errorMassage) {
             errorM("Input invalid!");
+        } else if (source == detailBtn) {
+            if (detailBtn.getLabel() == "Hide Details") {
+                detailSwitch = 0;
+                detailBtn.setLabel("Show Details");
+            } else if (detailBtn.getLabel() == "Show Details") {
+                detailSwitch = 1;
+                detailBtn.setLabel("Hide Details");
+            }
+            repaint();
         }
     }
 
@@ -316,7 +555,6 @@ public class Projectile extends PanelAbstract implements ActionListener {
             v0 = v;
             vx = v * Math.cos(theta);
             vy = v * Math.sin(theta);
-            System.out.println(m*g/b);
             if (m <= 0||v < 0 || g <= 0 || thetaSet >= 90 || b < 0 || b > 10 || m*g/b < 0.01) {
                 throw new NumberFormatException();
             }
@@ -328,6 +566,10 @@ public class Projectile extends PanelAbstract implements ActionListener {
             double yM = calMaxH();
             MAX_Y = scaleSet(yM);
             YScaleFactor = (double) Y_SCALE_HEIGHT/MAX_Y;
+
+            // calculate terminal V
+            if (b != 0)
+            terminalV = m * g/ b;
 
             timer.start();
 
@@ -381,12 +623,18 @@ public class Projectile extends PanelAbstract implements ActionListener {
         x_r += vx * k;
         y_r += vy * k;
 
+        if (y_r < 0) {
+            y_r = 0;
+        }
 
         x = LEFT + (int) Math.round(XScaleFactor *x_r);// set x
-        y = HEIGHT - tableHeight - (int) Math.round(YScaleFactor*y_r);// set y
+        y = HEIGHT - tableHeight - (int) Math.round(YScaleFactor*y_r) - objectHeight/2;// set y
 
         repaint();
-
+        // stop if touching ground
+        if (y_r <= 0 && vy < 0) {
+            stop();
+        }
 
     }
 
@@ -442,7 +690,41 @@ public class Projectile extends PanelAbstract implements ActionListener {
         thetaSet = Math.PI/6;
 
         repaint();
-        setInput();
+        addInput();
         this.add(runB);
     }
+
+    // helper function of restart (aim to conserve the input from the last turn)
+    private void addInput() {
+        this.add(massI);
+        this.add(massUnit);
+        this.add(massLabel);
+
+        this.add(velocityI);
+        this.add(velocityUnit);
+        this.add(velocityLabel);
+
+        this.add(thetaI);
+        this.add(thetaUnit);
+        this.add(thetaLabel);
+
+        this.add(gravityI);
+        this.add(gravityLabel);
+        this.add(gravityUnit);
+
+        this.add(bI);
+        this.add(bLabel);
+        this.add(bEq1);
+        this.add(bEq2);
+
+        this.add(runB);
+    }
+
+
+    public void stop() {
+        timer.stop();
+        remove(pauseB);
+
+    }
+
 }

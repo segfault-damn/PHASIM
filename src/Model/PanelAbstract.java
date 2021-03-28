@@ -181,7 +181,7 @@ public abstract class PanelAbstract extends JPanel implements ActionListener {
         return timer.isRunning();
     }
 
-    // load imagee
+    // load image
     private void load_image() {
         String sep = System.getProperty("file.separator");
         PauseIcon = new ImageIcon(System.getProperty("user.dir") + sep + "Image" + sep
