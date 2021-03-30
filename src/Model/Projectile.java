@@ -79,8 +79,8 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
     private double YScaleFactor;
 
     // max scale in the real distance
-    private int MAX_X;
-    private int MAX_Y;
+    private double MAX_X;
+    private double MAX_Y;
     // position
     private int x = LEFT ;
     private int y = HEIGHT - tableHeight - objectHeight/2;
@@ -445,7 +445,7 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
         }
     }
 
-    public void drawScaleX(Graphics2D g2d,int X_scale) {
+    public void drawScaleX(Graphics2D g2d,double X_scale) {
         g2d.setColor(new Color(14, 10, 10,150));
         g2d.setStroke(new BasicStroke(3));
         drawlineS_X(g2d,0,X_scale);
@@ -459,7 +459,7 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
         g2d.setStroke(new BasicStroke(0));
     }
 
-    public void drawScaleY(Graphics2D g2d,int Y_scale) {
+    public void drawScaleY(Graphics2D g2d,double Y_scale) {
         g2d.setColor(new Color(14, 10, 10,150));
         g2d.setStroke(new BasicStroke(3));
         drawlineS_Y(g2d,0,Y_scale);
@@ -475,25 +475,31 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
 
     // draw the scale line and scale number below x-axis
     // MAXSCALE is the max scaled width
-    public void drawlineS_X(Graphics2D g2d, int dx, int MAXSCALE) {
+    public void drawlineS_X(Graphics2D g2d, int dx, double MAXSCALE) {
         int SCALE_HEIGHT = 20;
         g2d.drawLine(LEFT + dx * (X_SCALE_WIDTH/5),HEIGHT - tableHeight,LEFT + dx * (X_SCALE_WIDTH/5),
                 HEIGHT-tableHeight+SCALE_HEIGHT);
         g2d.setFont(new Font("name",Font.BOLD,20));
-        g2d.drawString(dx*MAXSCALE/5 + "m",LEFT - 40 + dx * (X_SCALE_WIDTH/5),HEIGHT - tableHeight + SCALE_HEIGHT + 35);
+        if (MAXSCALE < 5) {
+            double width = (double) Math.round(dx * MAXSCALE / 5 *100) /100;
+            g2d.drawString(width + "m", LEFT - 40 + dx * (X_SCALE_WIDTH / 5), HEIGHT - tableHeight + SCALE_HEIGHT + 35);
+        } else {
+            int width = (int) Math.round(dx * MAXSCALE / 5);
+            g2d.drawString(width + "m", LEFT - 40 + dx * (X_SCALE_WIDTH / 5), HEIGHT - tableHeight + SCALE_HEIGHT + 35);
+        }
     }
 
     // draw the scale line and scale number beside y-axis
     // MAXSCALE is the max scaled height
-    public void drawlineS_Y(Graphics2D g2d, int dx, int MAXSCALE) {
+    public void drawlineS_Y(Graphics2D g2d, int dx, double MAXSCALE) {
         g2d.drawLine(0,HEIGHT - tableHeight -dx * Y_SCALE_HEIGHT/5 ,LEFT - 60,
                 HEIGHT-tableHeight -dx * Y_SCALE_HEIGHT/5);
         g2d.setFont(new Font("name",Font.BOLD,20));
         if (MAXSCALE <5) {
-            double height = (double) dx * MAXSCALE / 5;
+            double height = (double) Math.round(dx * MAXSCALE / 5 *100) /100;
             g2d.drawString(height + "m", 10, HEIGHT - tableHeight - dx * Y_SCALE_HEIGHT / 5 - 10);
         } else {
-            int height = dx * MAXSCALE / 5;
+            int height = (int) Math.round(dx * MAXSCALE / 5);
             g2d.drawString(height + "m", 10, HEIGHT - tableHeight - dx * Y_SCALE_HEIGHT / 5 - 10);
 
         }
@@ -505,7 +511,7 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
         // calculate kinetic energy
 
         double Ek = 0.5 * m * v * v;
-        double maxV = v0;
+        double maxV = v0 + Math.sqrt(g*h * 2);
         if (terminalV > v0) {
             maxV = terminalV;
         }
@@ -517,7 +523,7 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
         }
         double EkL= MaxBarL/EkM*Ek; // bar length
 
-
+        System.out.println(EkL);
         // calculate potential energy
         double Ep =  m * g * y_r;
         double EpM = calMaxH() * m * g;
@@ -560,7 +566,7 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
 
         g2d.setStroke(new BasicStroke(20));
         g2d.setColor(new Color(92, 25, 199,150));
-        if ((int) Math.round(EkL) != 0)
+       // if ((int) Math.round(EkL) != 0)
             g2d.drawLine(left,80,left + (int) Math.round(EkL),80);
 
         g2d.setColor(new Color(92, 25, 199));
@@ -615,7 +621,7 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
     }
 
     // return max optimized scale of the input scale
-    private int scaleSet (double scaleN){
+    private double scaleSet (double scaleN){
         double resolution = -2;
         while (scaleN > Math.pow(10,resolution + 1)) {
             resolution ++;
@@ -624,7 +630,7 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
         while (n < scaleN) {
              n = n + 5* Math.pow(10,resolution - 1);
         }
-        return (int) Math.round(n);
+        return n;
     }
 
 
@@ -734,7 +740,7 @@ public class Projectile extends PanelAbstract implements ActionListener, KeyList
             v0 = v;
             vx = v * Math.cos(theta);
             vy = v * Math.sin(theta);
-            if (m <= 0||v < 0 || g <= 0 || thetaSet >= 90 || b < 0 || b > 10 || m*g/b < 0.01) {
+            if (m <= 0||v < 0 || g <= 0 || thetaSet >= 90 || b < 0 || b > 10 || m*g/b < 0.01 || thetaSet < 0 || (thetaSet ==0 && h == 0)) {
                 throw new NumberFormatException();
             }
 

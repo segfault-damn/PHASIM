@@ -26,7 +26,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public MainFrame() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(null);
-        this.setBounds(250,250,WIDTH,HEIGHT);
+        this.setBounds(150,150,WIDTH,HEIGHT);
 
         //set back Button
         load_image();
