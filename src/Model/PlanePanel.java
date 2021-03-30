@@ -199,7 +199,7 @@ public class PlanePanel extends PanelAbstract implements ActionListener {
         g2d.drawLine(object_Px ,object_Py,object_Px ,object_Py + offset);
         g2d.drawLine(object_Px ,object_Py + offset, object_Px - 5 ,object_Py + offset - 20);
         g2d.drawLine(object_Px ,object_Py + offset, object_Px + 5 ,object_Py + offset - 20);
-        g2d.drawString("mg",object_Px ,object_Py + offset + legendoffset + 10);
+        g2d.drawString("Fg",object_Px ,object_Py + offset + legendoffset + 10);
 
         // draw the Normal force
         // check whether there is a normal force(it may fly)

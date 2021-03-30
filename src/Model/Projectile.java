@@ -5,11 +5,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
-import static sun.swing.MenuItemLayoutHelper.max;
 
-
-public class Projectile extends PanelAbstract implements ActionListener {
+public class Projectile extends PanelAbstract implements ActionListener, KeyListener {
     private static final int WIDTH = MainFrame.WIDTH; //1000
     private static final int HEIGHT = MainFrame.HEIGHT;
     private static final int LEFT = 80;
@@ -29,6 +29,8 @@ public class Projectile extends PanelAbstract implements ActionListener {
     JLabel velocityUnit = new JLabel("m/s");
     JLabel gravityLabel = new JLabel("Gravity:");
     JLabel gravityUnit = new JLabel("m/s^2");
+    JLabel heightLabel = new JLabel("height");
+    JLabel heightUnit = new JLabel("m");
 
     JLabel bLabel = new JLabel("Air Drag Coefficient:");
     JLabel bEq1 = new JLabel("(Linear Model)   -");
@@ -43,6 +45,15 @@ public class Projectile extends PanelAbstract implements ActionListener {
     JButton detailBtn;
     private int detailSwitch = 1; // detail btn flag-- 1: on; 2:off;
 
+    private JButton increaseBtn;
+    private JButton decreaseBtn;
+    private JLabel stepNLb;
+    private double stepN =0.1;
+    private JTextField HI;
+    private final static double MAXHLIMIT = 10000000;
+    private ImageIcon upIcon;
+    private ImageIcon downIcon;
+
 
     // variables
     private double t = 0.0;//time
@@ -50,7 +61,7 @@ public class Projectile extends PanelAbstract implements ActionListener {
     private double m = 1.0;// mass > 0
     private double b = 0;// coefficient >= 0
     private double thetaSet =Math.PI/6; // initial angle
-    private double h = 0;// height >= 0
+    private double h = 0;// height >= 0 < 1000000
 
     private double x_r = 0.0;
     private double y_r = 0.0;
@@ -76,12 +87,16 @@ public class Projectile extends PanelAbstract implements ActionListener {
 
     private double terminalV = -1; // terminal velocity is -1 if b = 0;
 
+    // The current max height of the platform
+    private  double MaxCurrHeight = 1;
+
 
 
     public Projectile() {
         super();
         setInput();
         setDetailBtn();
+        setHeightInput();
     }
 
     public void setInput() {
@@ -116,6 +131,8 @@ public class Projectile extends PanelAbstract implements ActionListener {
         velocityI.setBounds(680,150,100,50);
 
         bI.setBounds(680,250,100,50);
+
+
     }
 
     public void setLabel() {
@@ -131,6 +148,8 @@ public class Projectile extends PanelAbstract implements ActionListener {
         bLabel.setFont(labelFont);
         bEq1.setFont(labelFont);
         bEq2.setFont(labelFont);
+        heightLabel.setFont(labelFont);
+        heightUnit.setFont(labelFont);
 
 
         massLabel.setBounds(30,50,300,50);
@@ -149,6 +168,9 @@ public class Projectile extends PanelAbstract implements ActionListener {
         bEq1.setBounds(410,250,350,50);
         bEq2.setBounds(785,250,100,50);
 
+        heightLabel.setBounds(600,430,300,50);
+        heightUnit.setBounds(700,480,100,50);
+
         this.add(massLabel);
         this.add(massUnit);
         this.add(thetaLabel);
@@ -160,6 +182,8 @@ public class Projectile extends PanelAbstract implements ActionListener {
         this.add(bLabel);
         this.add(bEq1);
         this.add(bEq2);
+        this.add(heightLabel);
+        this.add(heightUnit);
 
     }
 
@@ -167,7 +191,7 @@ public class Projectile extends PanelAbstract implements ActionListener {
         detailBtn = new JButton(); // initialing with detail on
         detailBtn.setUI(new BtnUI());
         detailBtn.addActionListener(this);
-        detailBtn.setFont(new Font("Cambria",Font.PLAIN,25));
+        detailBtn.setFont(new Font("Cambria",Font.BOLD,25));
         detailBtn.setBounds(750,10,300,30);
         detailBtn.setForeground(new Color(79, 113, 236,200));
         detailBtn.setBackground(new Color(186, 185, 184,100));
@@ -175,25 +199,93 @@ public class Projectile extends PanelAbstract implements ActionListener {
         this.add(detailBtn);
     }
 
+    private void setHeightInput() {
+        increaseBtn = new JButton(upIcon);
+        increaseBtn.setUI(new BtnUI());
+        increaseBtn.addActionListener(this);
+        increaseBtn.setBounds(400,420,50,50);
+        this.add(increaseBtn);
+
+        decreaseBtn= new JButton(downIcon);
+        decreaseBtn.setUI(new BtnUI());
+        decreaseBtn.addActionListener(this);
+        decreaseBtn.setBounds(400,530,50,50);
+        this.add(decreaseBtn);
+
+        stepNLb = new JLabel();
+        stepNLb.setText("0.1 m");
+        stepNLb.setFont(labelFont);
+        stepNLb.setBounds(400,450,300,100);
+        stepNLb.setForeground(new Color(79, 113, 236,200));
+        this.add(stepNLb);
+
+        HI = new JTextField("0",4);
+        HI.setBounds(600,480,100,50);
+        this.add(HI);
+        HI.setFont(InputFont);
+        HI.addKeyListener(this);
+    }
+
+    //-------------------------------------------------------------------------------------------
     // paint animation
     public void paintComponent(Graphics gr) {
         super.paintComponent(gr);
         Graphics2D g2d = (Graphics2D) gr;
 
 
-        // DRAW OBJECT
-        g2d.setColor(new Color(141, 30, 18,200));
-        g2d.fillRoundRect(x - objectHeight/2,y - objectHeight/2,objectWidth,objectHeight,50,50);
 
 
         // DRAW PLATFORM
+
         g2d.setStroke(new BasicStroke(3));
-        g2d.setColor(new Color(14, 10, 10));
-        g2d.drawLine(LEFT - objectWidth/2 + 10,HEIGHT - tableHeight, LEFT - objectWidth/2 + 10, (int) Math.round(HEIGHT - h -tableHeight));
-        g2d.drawLine(LEFT + objectWidth/2 - 10,HEIGHT - tableHeight, LEFT + objectWidth/2 - 10, (int) Math.round(HEIGHT - h -tableHeight));
-        g2d.drawLine(LEFT - objectWidth/2,(int) Math.round(HEIGHT - h -tableHeight), LEFT + objectWidth/2, (int) Math.round(HEIGHT - h -tableHeight));
+        int scaleh;
+        if (t>0) {
+            g2d.setColor(new Color(14, 10, 10,50));
+            scaleh = (int) Math.round(YScaleFactor*h);
+        } else {
+            g2d.setColor(new Color(14, 10, 10));
+            scaleh = getPlatformHeight();
+        }
+        g2d.drawLine(LEFT - objectWidth/2 + 10,HEIGHT - tableHeight, LEFT - objectWidth/2 + 10, HEIGHT - scaleh -tableHeight);
+        g2d.drawLine(LEFT + objectWidth/2 - 10,HEIGHT - tableHeight, LEFT + objectWidth/2 - 10, HEIGHT - scaleh -tableHeight);
+        g2d.drawLine(LEFT - objectWidth/2,HEIGHT - scaleh -tableHeight, LEFT + objectWidth/2, HEIGHT - scaleh -tableHeight);
+
+        g2d.drawLine(LEFT - objectWidth/2,HEIGHT - scaleh -tableHeight, LEFT - objectWidth/2 - 17, HEIGHT - scaleh -tableHeight - 11);
+        g2d.drawLine(LEFT + objectWidth/2,HEIGHT - scaleh -tableHeight, LEFT + objectWidth/2 + 17, HEIGHT - scaleh -tableHeight - 11);
+
         g2d.setStroke(new BasicStroke(0));
 
+        // DRAW OBJECT
+        g2d.setColor(new Color(141, 30, 18,200));
+        if (t == 0) {
+            g2d.fillRoundRect(x - objectHeight/2,y - scaleh - objectHeight/2,objectWidth,objectHeight,50,50);
+        } else {
+            g2d.fillRoundRect(x - objectHeight / 2, y - objectHeight / 2, objectWidth, objectHeight, 50, 50);
+        }
+
+        // Draw PLATFORM SCALE
+        g2d.setStroke(new BasicStroke(2));
+
+        g2d.setColor(new Color(10, 50, 172,180));
+        if(t == 0) {
+            int x_pos = LEFT+60;
+            if (Math.round(h*10) != 0) {
+                g2d.drawLine(x_pos,HEIGHT - tableHeight -10,x_pos,HEIGHT-scaleh-tableHeight +10);
+                int[] TriX = {x_pos - 10,x_pos + 10, x_pos};
+                int[] upperTriY = {HEIGHT - tableHeight - scaleh,HEIGHT - tableHeight - scaleh, HEIGHT - tableHeight - scaleh + 10};
+                int[] lowerTriY = {HEIGHT - tableHeight,HEIGHT - tableHeight, HEIGHT - tableHeight-10};
+                g2d.fillPolygon(TriX,upperTriY,3);
+                g2d.fillPolygon(TriX,lowerTriY,3);
+               }
+            double height = (double) Math.round(h*10)/10;
+            if(height < 1000) {
+                g2d.drawString(height + " m", x_pos + 20, HEIGHT - tableHeight - scaleh / 2);
+            } else {
+                height = (double) Math.round(h/100)/10;
+                g2d.drawString(height + " km", x_pos + 20, HEIGHT - tableHeight - scaleh / 2);
+
+            }
+        }
 
 
         if(timer.isRunning() || t > 0) {
@@ -210,6 +302,51 @@ public class Projectile extends PanelAbstract implements ActionListener {
 
     }
 
+//--------------------------------------------------------------------------------------------------
+
+    // return platform's height according to the input
+    private int getPlatformHeight() {
+        double height = h;
+        int result;
+        int MaxAllowed = 250;
+
+        result = (int) Math.round(MaxAllowed/MaxCurrHeight * height);
+
+       return result;
+    }
+
+    // resize the max platform height up
+    private void resizeMaxHeightUP() {
+        double height = h;
+        while (height > MaxCurrHeight) {
+            MaxCurrHeight = MaxCurrHeight * 10;
+            stepN = stepN*10;
+        }
+        if(stepN < 1000) {
+            stepNLb.setText(stepN + " m");
+        } else {
+            stepNLb.setText((double)Math.round(stepN/100)/10 + " km");
+        }
+    }
+
+    // resize the min platform down
+    private void resizeMaxHeightDOWN() {
+        double height = h;
+        if (height != 0) {
+            while (height < MaxCurrHeight / 10 && MaxCurrHeight > 1 && stepN > 0.1) {
+                MaxCurrHeight = MaxCurrHeight / 10;
+                stepN = stepN / 10;
+            }
+        }
+        if(stepN < 1000) {
+            stepNLb.setText(stepN + " m");
+        } else {
+            stepNLb.setText((double) Math.round(stepN/100)/10 + " km");
+        }
+    }
+
+
+    // draw output details
     public void drawOutput(Graphics2D g2d) {
         g2d.setColor(new Color(14, 10, 10,200));
         // draw outputs
@@ -232,6 +369,11 @@ public class Projectile extends PanelAbstract implements ActionListener {
             double f = (double) Math.round(b * v * 100) / 100;
             g2d.drawString("Air Drag Force = " + f + " N", 90, 360);
         }
+
+        double velocityX = (double) Math.round(vx *100)/100;
+        g2d.drawString("Vx = " + velocityX + " m/s",500,220);
+        double velocityY = (double) Math.round(vy *100)/100;
+        g2d.drawString("Vy = " + velocityY + " m/s",500,290);
     }
 
     @Override
@@ -250,7 +392,7 @@ public class Projectile extends PanelAbstract implements ActionListener {
         g2d.drawLine(x,y,x,y + offset);
         g2d.drawLine(x ,y + offset, x - 5 ,y + offset - 20);
         g2d.drawLine(x ,y + offset, x + 5 ,y + offset - 20);
-        g2d.drawString("mg",x + legendoffset ,y + offset);
+        g2d.drawString("Fg",x + legendoffset ,y + offset);
 
         // draw the Air drag force (if b !=0)
         if (b != 0 && v!= 0) {
@@ -495,7 +637,7 @@ public class Projectile extends PanelAbstract implements ActionListener {
     private double calMaxX() {
        // -h  = - 0.5 * g * t ^2 + v*Math.sin(theta)*t;
         double MaxX;
-        if (b >= 1) {
+        if (b >= 0.1) {
             MaxX = m / b * v0 * Math.cos(theta);
         } else {
            // -h = - 0.5 * g * t* t + v0 * sin(theta) * t;
@@ -514,9 +656,10 @@ public class Projectile extends PanelAbstract implements ActionListener {
             MaxH = -m /b * C * (m*g/b/C - 1) + m*m*g/b/b * Math.log(m*g/b/C) + h;
         } else {
           double tApproximate = v0*Math.sin(thetaSet)/g;
-          MaxH = - 0.5 * g * tApproximate * tApproximate + v0*Math.sin(thetaSet)*tApproximate;
+          MaxH = - 0.5 * g * tApproximate * tApproximate + v0*Math.sin(thetaSet)*tApproximate + h;
         }
-        return MaxH;
+        //5% offset to avoid touch the ceiling
+        return MaxH * 1.05;
     }
 
     /**
@@ -539,6 +682,42 @@ public class Projectile extends PanelAbstract implements ActionListener {
                 detailBtn.setLabel("Hide Details");
             }
             repaint();
+        } else if (source == increaseBtn) {
+            if (h + stepN <= MAXHLIMIT) {
+                if (h + stepN > MaxCurrHeight) {
+                    MaxCurrHeight = MaxCurrHeight * 10;
+                    stepN = stepN * 10;
+                    if (stepN < 1000) {
+                        stepNLb.setText(stepN + " m");
+                    } else {
+                        stepNLb.setText(Math.round(stepN / 100) / 10 + " km");
+                    }
+                }
+                h += stepN;
+                repaint();
+            } else {
+                h = MAXHLIMIT;
+                repaint();
+            }
+        } else if (source == decreaseBtn) {
+            if ( h - stepN >= 0) {
+                if (h - stepN <= MaxCurrHeight/10 && stepN > 0.1) {
+                    MaxCurrHeight = MaxCurrHeight / 10;
+                    h -= stepN;
+                    stepN = stepN/10;
+                    if(stepN < 1000) {
+                        stepNLb.setText(stepN + " m");
+                    } else {
+                        stepNLb.setText(Math.round(stepN/100)/10 + " km");
+                    }
+                } else {
+                    h -= stepN;
+                }
+                repaint();
+            } else{
+                h = 0;
+                repaint();
+            }
         }
     }
 
@@ -558,6 +737,8 @@ public class Projectile extends PanelAbstract implements ActionListener {
             if (m <= 0||v < 0 || g <= 0 || thetaSet >= 90 || b < 0 || b > 10 || m*g/b < 0.01) {
                 throw new NumberFormatException();
             }
+
+            y_r = h;
 
             // get scale numbers
             double xM = calMaxX();
@@ -669,6 +850,14 @@ public class Projectile extends PanelAbstract implements ActionListener {
 
         this.remove(runB);
 
+        this.remove(HI);
+        this.remove(heightLabel);
+        this.remove(heightUnit);
+        this.remove(stepNLb);
+        // two input buttons deleted
+        this.remove(increaseBtn);
+        this.remove(decreaseBtn);
+
     }
 
     @Override
@@ -718,6 +907,14 @@ public class Projectile extends PanelAbstract implements ActionListener {
         this.add(bEq2);
 
         this.add(runB);
+
+        this.add(HI);
+        this.add(heightLabel);
+        this.add(heightUnit);
+        this.add(stepNLb);
+        // two input buttons added
+        this.add(increaseBtn);
+        this.add(decreaseBtn);
     }
 
 
@@ -727,4 +924,73 @@ public class Projectile extends PanelAbstract implements ActionListener {
 
     }
 
+    /**
+     * Invoked when a key has been typed.
+     * See the class description for {@link KeyEvent} for a definition of
+     * a key typed event.
+     *
+     * @param e
+     */
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    /**
+     * Invoked when a key has been pressed.
+     * See the class description for {@link KeyEvent} for a definition of
+     * a key pressed event.
+     *
+     * @param e
+     */
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    /**
+     * Invoked when a key has been released.
+     * See the class description for {@link KeyEvent} for a definition of
+     * a key released event.
+     *
+     * @param e
+     */
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getSource() == HI && !HI.getText().equals("")) {
+           try {
+               double height = Double.parseDouble(HI.getText());
+               if (height < 0 || height > MAXHLIMIT) {
+                   throw new NumberFormatException();
+               } else {
+                   h = height;
+                   resizeMaxHeightUP();
+                   resizeMaxHeightDOWN();
+                   repaint();
+               }
+           } catch (NumberFormatException x) {
+               if(this.isAncestorOf(errorLabel)) {
+                   this.remove(errorLabel);
+                   this.updateUI();
+               }
+               errort = 0;
+               errorMassage.start();
+           }
+
+        }
+
+    }
+
+    @Override
+    protected void load_image() {
+        super.load_image();
+        String sep = System.getProperty("file.separator");
+        upIcon = new ImageIcon(System.getProperty("user.dir") + sep + "Image" + sep
+                + "Up.png");
+        downIcon = new ImageIcon(System.getProperty("user.dir") + sep + "Image" + sep
+                + "Down.png");
+
+        upIcon = new ImageIcon(upIcon.getImage().getScaledInstance(50,50,1));
+        downIcon = new ImageIcon(downIcon.getImage().getScaledInstance(50,50,1));
+    }
 }

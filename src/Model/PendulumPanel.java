@@ -216,7 +216,7 @@ public class PendulumPanel  extends PanelAbstract implements ActionListener {
         g2d.drawLine(x,y,x,y + offset);
         g2d.drawLine(x ,y + offset, x - 5 ,y + offset - 20);
         g2d.drawLine(x ,y + offset, x + 5 ,y + offset - 20);
-        g2d.drawString("mg",x + legendoffset ,y + offset - legendoffset);
+        g2d.drawString("Fg",x + legendoffset ,y + offset - legendoffset);
 
         // draw the tension force
         g2d.setColor(new Color(5, 151, 52));
